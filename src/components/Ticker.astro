@@ -1,0 +1,23 @@
+---
+import SeedMark from './SeedMark.astro';
+const items = ['Sala global 24/7','Bullet · Blitz · Rápidas','Apuesta en Seeds','Antitrampas en tiempo real','Retiros verificados','68 países','Tú pones las reglas'];
+---
+
+<div class="mx-auto max-w-[1400px] px-6 lg:px-10">
+  <div class="relative overflow-hidden rounded-chip border border-line/70 bg-surface/50 py-4" aria-hidden="true">
+    <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-32 bg-gradient-to-r from-navy to-transparent"></div>
+    <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-32 bg-gradient-to-l from-navy to-transparent"></div>
+    <div class="flex w-max animate-marquee hover:[animation-play-state:paused]">
+      {[0, 1].map(() => (
+        <ul class="flex shrink-0 items-center">
+          {items.map((item) => (
+            <li class="flex items-center gap-8 px-8">
+              <span class="whitespace-nowrap font-display text-lg text-ivory/80">{item}</span>
+              <SeedMark class="size-4 opacity-70" />
+            </li>
+          ))}
+        </ul>
+      ))}
+    </div>
+  </div>
+</div>

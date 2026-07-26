@@ -1,0 +1,6 @@
+---
+/** Seed de Oro (asset de marca en /public/brand/seed.svg). */
+interface Props { class?: string; alt?: string }
+const { class: className = '', alt = '' } = Astro.props;
+---
+<img src="/brand/seed.svg" alt={alt} class={className} loading="lazy" decoding="async" />

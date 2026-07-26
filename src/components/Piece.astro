@@ -1,0 +1,24 @@
+---
+interface Props {
+  type: 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king';
+  variant?: 'solid' | 'line';
+  class?: string;
+}
+const { type, variant = 'line', class: className = '' } = Astro.props;
+
+const paths: Record<Props['type'], string[]> = {
+  pawn: ['M50 16a14 14 0 1 1 0 28 14 14 0 0 1 0-28Z','M37 46h26l-5 9H42z','M42 55c0 20-8 30-12 40h40c-4-10-12-20-12-40z','M22 95h56l5 12H17z'],
+  rook: ['M26 20h11v9h8v-9h10v9h8v-9h11v22H26z','M32 42h37l-5 46H37z','M26 88h49l5 19H21z'],
+  knight: ['M34 107c2-17 6-35 4-49l-10 8 4-14-8 6c0-12 6-24 16-32l8-8c1 6 4 11 8 14 10 8 14 22 6 32 8 10 12 22 12 43z','M44 34a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z'],
+  bishop: ['M50 12c12 12 18 23 18 34 0 12-8 19-18 19s-18-7-18-19c0-11 6-22 18-34Z','M36 65h28l-2 8H38z','M40 73c0 12-6 18-10 22h40c-4-4-10-10-10-22z','M22 95h56l5 12H17z'],
+  queen: ['M24 44 30 18l10 18 10-22 10 22 10-18 6 26z','M28 44h44l-2 8H30z','M30 52h40c-2 22-8 34-10 42H40c-2-8-8-20-10-42z','M24 94h52l5 13H19z'],
+  king: ['M46 6h8v8h8v8h-8v8h-8v-8h-8v-8h8z','M28 46 34 30l16 8 16-8 6 16z','M28 46h44l-2 8H30z','M30 54h40c-2 20-8 30-10 40H40c-2-10-8-20-10-40z','M24 94h52l5 13H19z'],
+};
+const solid = variant === 'solid';
+---
+
+<svg viewBox="0 0 100 116" fill="none" aria-hidden="true" class={className} xmlns="http://www.w3.org/2000/svg">
+  <g stroke="currentColor" stroke-width={solid ? 0 : 1.6} stroke-linejoin="round" fill={solid ? 'currentColor' : 'none'}>
+    {paths[type].map((d) => <path d={d} />)}
+  </g>
+</svg>

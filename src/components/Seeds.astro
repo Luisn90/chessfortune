@@ -1,0 +1,230 @@
+---
+import { seedsFlow } from '../data/site';
+---
+
+<section id="seeds" class="relative overflow-hidden py-24 lg:py-40">
+  <div
+    class="pointer-events-none absolute left-1/2 top-1/2 size-[80vw] max-w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-35 blur-[150px]"
+    style="background: radial-gradient(circle, rgba(224,169,87,0.18), transparent 65%)"
+    aria-hidden="true"
+  ></div>
+
+  <div class="relative mx-auto max-w-[1400px] px-6 lg:px-10">
+    <hr class="rule rule-fade mb-24 lg:mb-32" />
+    <div class="grid items-center gap-16 lg:grid-cols-12 lg:gap-20">
+      <!-- ── Moneda 3D (WebGL con fallback al SVG plano) ── -->
+      <div class="order-2 lg:order-1 lg:col-span-5">
+        <div data-reveal="scale" class="relative mx-auto w-full max-w-[340px]">
+          <div
+            class="seed3d relative z-10 aspect-square w-full cursor-grab active:cursor-grabbing"
+            style="filter: drop-shadow(0 30px 70px rgba(224,169,87,0.28)); touch-action: pan-y"
+          ></div>
+          <img
+            src="/brand/seed.svg"
+            alt="Seed de oro, la moneda de Chess Fortune"
+            class="seed-fallback relative z-10 hidden w-full animate-[coinFloat_9s_ease-in-out_infinite] drop-shadow-[0_30px_70px_rgba(224,169,87,0.28)]"
+          />
+          <div class="pointer-events-none absolute inset-[-12%] animate-[spin_28s_linear_infinite] rounded-full border border-dashed border-gold/20" aria-hidden="true"></div>
+          <div class="pointer-events-none absolute inset-[-24%] animate-[spin_46s_linear_infinite_reverse] rounded-full border border-gold/10" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <div class="order-1 lg:order-2 lg:col-span-7">
+        <p data-reveal="wipe" class="eyebrow mb-5">La moneda · Seeds</p>
+        <h2 data-reveal="mask" style="--reveal-delay:90ms" class="text-[length:var(--text-display)]">
+          Tu poder<br /> en el <span class="text-gilded">juego</span>.
+        </h2>
+        <p data-reveal="up" style="--reveal-delay:200ms" class="mt-8 max-w-xl text-lg leading-relaxed text-mist">
+          Las Seeds son la moneda de Chess Fortune. No son un adorno: son la apuesta, el premio y la llave de acceso a las mesas altas. Un ciclo cerrado y transparente.
+        </p>
+
+        <ol class="mt-14 space-y-3">
+          {seedsFlow.map((f, i) => (
+            <li
+              data-reveal="right"
+              style={`--reveal-delay:${i * 120}ms`}
+              class="spotlight group relative grid grid-cols-[auto_1fr] gap-6 overflow-hidden rounded-card border border-line/60 bg-surface/30 p-7 transition-all duration-500 hover:border-gold/40 hover:bg-surface/70 sm:grid-cols-[7rem_1fr] sm:gap-10"
+            >
+              <span class="font-display text-2xl text-gold">{f.step}</span>
+              <div>
+                <h3 class="text-lg text-white">{f.title}</h3>
+                <p class="mt-2 text-sm leading-relaxed text-mist">{f.body}</p>
+              </div>
+              <span class="absolute bottom-4 left-0 top-4 w-px origin-top scale-y-0 rounded-full bg-gold transition-transform duration-600 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-y-100" />
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+  /**
+   * SEED DE ORO EN 3D — Three.js empaquetado localmente por Vite.
+   * Moneda con grosor, oro metálico y el brote del SVG de marca
+   * extruido en relieve sobre ambas caras. Gira sola y se puede
+   * arrastrar. Fallback al SVG plano si no hay WebGL.
+   */
+  import * as THREE from 'three';
+  import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
+  import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+  const CFG = {
+    gold: 0xe0a957,
+    goldSoft: 0xffdba5,
+    goldDeep: 0xbc7c1c,
+    thickness: 0.16, // grosor de la moneda
+    relieve: 0.045,  // altura del relieve del brote
+    autoSpin: 0.35,  // rad/s
+    floatAmp: 0.05,
+  };
+
+  async function buildCoin(holder: HTMLElement) {
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 20);
+    camera.position.set(0, 0, 4.6);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+    holder.appendChild(renderer.domElement);
+
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+    const key = new THREE.DirectionalLight(0xffdba5, 1.4);
+    key.position.set(2.5, 2, 3);
+    scene.add(key);
+    const rim = new THREE.DirectionalLight(0x9aa6c2, 0.5);
+    rim.position.set(-3, -1, -2);
+    scene.add(rim);
+
+    const matBody = new THREE.MeshPhysicalMaterial({ color: CFG.gold, metalness: 1, roughness: 0.22, clearcoat: 0.4, clearcoatRoughness: 0.25 });
+    const matDisc = new THREE.MeshPhysicalMaterial({ color: CFG.goldSoft, metalness: 1, roughness: 0.32 });
+    const matSprout = new THREE.MeshPhysicalMaterial({ color: CFG.goldDeep, metalness: 1, roughness: 0.38, side: THREE.DoubleSide });
+
+    const coin = new THREE.Group();
+    scene.add(coin);
+
+    const zAxis = (g: THREE.BufferGeometry) => { g.rotateX(Math.PI / 2); return g; };
+    coin.add(new THREE.Mesh(zAxis(new THREE.CylinderGeometry(1, 1, CFG.thickness, 128)), matBody));
+    coin.add(new THREE.Mesh(zAxis(new THREE.CylinderGeometry(0.8, 0.8, CFG.thickness + 0.012, 128)), matBody));
+    coin.add(new THREE.Mesh(zAxis(new THREE.CylinderGeometry(0.67, 0.67, CFG.thickness + 0.022, 128)), matDisc));
+
+    // Brote acuñado: extruimos el path real del SVG de marca
+    const svgText = await fetch('/brand/seed.svg').then((r) => r.text());
+    const d = /<path[^>]*\sd="([^"]+)"/.exec(svgText)?.[1];
+    if (d) {
+      const svgData = new SVGLoader().parse(`<svg xmlns="http://www.w3.org/2000/svg"><path d="${d}"/></svg>`);
+      const shapes = svgData.paths.flatMap((p) => SVGLoader.createShapes(p));
+      const geo = new THREE.ExtrudeGeometry(shapes, {
+        depth: CFG.relieve,
+        bevelEnabled: true,
+        bevelThickness: 0.008,
+        bevelSize: 0.006,
+        bevelSegments: 2,
+        curveSegments: 10,
+      });
+      geo.computeBoundingBox();
+      const bb = geo.boundingBox!;
+      const size = new THREE.Vector3();
+      bb.getSize(size);
+      const s = 1.0 / Math.max(size.x, size.y);
+      geo.translate(-(bb.min.x + size.x / 2), -(bb.min.y + size.y / 2), 0);
+      geo.scale(s, -s, 1); // -s: el eje Y del SVG apunta hacia abajo
+
+      const front = new THREE.Mesh(geo, matSprout);
+      front.position.z = CFG.thickness / 2 + 0.011;
+      coin.add(front);
+      const back = front.clone();
+      back.rotation.y = Math.PI;
+      back.position.z = -front.position.z;
+      coin.add(back);
+    }
+
+    // Interacción: giro automático + arrastre + inclinación al cursor
+    let targetRX = 0, targetRY = 0, dragging = false, px = 0, py = 0;
+    holder.addEventListener('pointerdown', (e) => { dragging = true; px = e.clientX; py = e.clientY; holder.setPointerCapture(e.pointerId); });
+    holder.addEventListener('pointermove', (e) => {
+      if (dragging) {
+        targetRY += (e.clientX - px) * 0.012;
+        targetRX += (e.clientY - py) * 0.008;
+        px = e.clientX; py = e.clientY;
+      } else {
+        const r = holder.getBoundingClientRect();
+        targetRX = ((e.clientY - r.top) / r.height - 0.5) * 0.5;
+      }
+    });
+    holder.addEventListener('pointerup', () => (dragging = false));
+    holder.addEventListener('pointerleave', () => { if (!dragging) targetRX = 0; });
+
+    const clock = new THREE.Clock();
+    let rafId: number | null = null;
+
+    function frame() {
+      const dt = clock.getDelta();
+      const t = clock.elapsedTime;
+      if (!dragging) targetRY += CFG.autoSpin * dt;
+      targetRX = Math.max(-0.9, Math.min(0.9, targetRX));
+      coin.rotation.y += (targetRY - coin.rotation.y) * 0.08;
+      coin.rotation.x += (targetRX - coin.rotation.x) * 0.06;
+      coin.position.y = Math.sin(t * 0.8) * CFG.floatAmp;
+      renderer.render(scene, camera);
+      rafId = requestAnimationFrame(frame);
+    }
+
+    function resize() {
+      const w = holder.clientWidth;
+      const h = holder.clientHeight || w;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    new ResizeObserver(resize).observe(holder);
+    resize();
+
+    if (reduced) {
+      coin.rotation.set(0.15, -0.4, 0);
+      renderer.render(scene, camera);
+    } else {
+      frame();
+      // Pausa cuando la sección sale de pantalla
+      new IntersectionObserver(([e]) => {
+        if (e.isIntersecting) {
+          if (rafId === null) { clock.getDelta(); frame(); }
+        } else if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+      }, { threshold: 0.05 }).observe(holder);
+    }
+
+    // Limpieza al navegar (View Transitions): liberar el contexto WebGL
+    document.addEventListener('astro:before-swap', () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      renderer.dispose();
+      pmrem.dispose();
+    }, { once: true });
+  }
+
+  function initSeed3d() {
+    document.querySelectorAll<HTMLElement>('.seed3d:not([data-init])').forEach((holder) => {
+      holder.dataset.init = '1';
+      buildCoin(holder).catch((err) => {
+        console.warn('WebGL no disponible, usando la moneda plana:', err);
+        holder.remove();
+        holder.closest('[data-reveal]')?.querySelector('.seed-fallback')?.classList.remove('hidden');
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', initSeed3d);
+</script>

@@ -1,0 +1,22 @@
+---
+import { stats } from '../data/site';
+---
+
+<section class="mx-auto max-w-[1400px] px-6 pb-24 lg:px-10 lg:pb-32">
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {stats.map((s, i) => (
+      <div
+        data-reveal="up"
+        style={`--reveal-delay:${i * 110}ms`}
+        class="spotlight group relative overflow-hidden rounded-card border border-line/70 bg-surface/40 px-8 py-12 transition-colors duration-500 hover:border-gold/35 hover:bg-surface"
+      >
+        <span class="absolute right-6 top-5 font-sans text-[0.6rem] tracking-[0.3em] text-gold/30 transition-transform duration-600 group-hover:-translate-y-1">0{i + 1}</span>
+        <p class="font-display text-5xl text-white lg:text-6xl">
+          <span data-count={s.value} data-decimals={s.decimals ?? 0}>0</span><span class="text-gilded">{s.suffix}</span>
+        </p>
+        <p class="mt-4 max-w-[16ch] text-sm leading-snug text-mist">{s.label}</p>
+        <span class="absolute bottom-4 left-8 right-8 h-px origin-left scale-x-0 rounded-full bg-gradient-to-r from-gold to-transparent transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-x-100" />
+      </div>
+    ))}
+  </div>
+</section>

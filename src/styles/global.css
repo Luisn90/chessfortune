@@ -1,0 +1,269 @@
+@import 'tailwindcss';
+
+/* Tipografías locales (sin llamadas a Google) */
+@import '@fontsource/young-serif/400.css';
+@import '@fontsource-variable/rubik';
+
+/* ══════════════════ TOKENS ══════════════════ */
+@theme {
+  --color-navy: #090c16;      /* fondo único de toda la página */
+  --color-surface: #0e1424;   /* tarjetas */
+  --color-surface-2: #141c30; /* tarjetas en hover */
+  --color-line: #223052;      /* bordes y filetes */
+
+  /* Dorado real de marca (extraído del logo) */
+  --color-gold: #e0a957;
+  --color-gold-soft: #ffdba5;
+  --color-gold-deep: #bc7c1c;
+
+  --color-ivory: #f6f3ec;
+  --color-mist: #9aa6c2;
+
+  --font-display: 'Young Serif', ui-serif, Georgia, serif;
+  --font-sans: 'Rubik Variable', 'Rubik', ui-sans-serif, system-ui, sans-serif;
+
+  --text-hero: clamp(2.9rem, 9vw, 8.5rem);
+  --text-display: clamp(2.1rem, 5.4vw, 4.6rem);
+  --text-title: clamp(1.6rem, 3vw, 2.6rem);
+
+  /* ── RADIOS: toca solo estos cuatro valores ── */
+  --radius-btn: 14px;
+  --radius-card: 22px;
+  --radius-panel: 32px;
+  --radius-chip: 999px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+
+  --animate-marquee: marquee 46s linear infinite;
+  --animate-float: float 9s ease-in-out infinite;
+}
+
+@keyframes marquee { to { transform: translateX(-50%); } }
+@keyframes float {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50%      { transform: translate3d(0, -22px, 0) rotate(1.6deg); }
+}
+@keyframes sheen {
+  0%, 65%, 100% { transform: translateX(-140%) skewX(-18deg); }
+  85%           { transform: translateX(240%) skewX(-18deg); }
+}
+@keyframes gild { to { background-position: 200% 0; } }
+@keyframes coinFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-18px) rotate(4deg); }
+}
+@keyframes scrollCue {
+  0% { transform: translateY(-100%); }
+  60%, 100% { transform: translateY(360%); }
+}
+
+/* ══════════════════ BASE ══════════════════ */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+  body {
+    background-color: var(--color-navy);
+    color: var(--color-mist);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    color: #fff;
+    line-height: 0.94;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  p { text-wrap: pretty; }
+  ::selection { background: var(--color-gold); color: var(--color-navy); }
+  :focus-visible { outline: 2px solid var(--color-gold); outline-offset: 3px; border-radius: 8px; }
+
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: var(--color-navy); }
+  ::-webkit-scrollbar-thumb { background: var(--color-line); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-gold); }
+}
+
+/* ══════════════════ UTILIDADES DE MARCA ══════════════════ */
+@utility text-gilded {
+  background-image: linear-gradient(100deg, var(--color-gold-deep) 0%, var(--color-gold) 28%, var(--color-gold-soft) 48%, var(--color-gold) 68%, var(--color-gold-deep) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gild 9s linear infinite;
+}
+
+@utility eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+/* Filete redondeado: sustituye a los border-t/border-b rectos */
+@utility rule {
+  display: block;
+  height: 1px;
+  border-radius: 999px;
+  background: var(--color-line);
+  border: 0;
+  margin: 0;
+}
+@utility rule-fade {
+  background: linear-gradient(90deg, transparent, var(--color-line) 15%, var(--color-line) 85%, transparent);
+}
+
+@utility no-bar { scrollbar-width: none; }
+.no-bar::-webkit-scrollbar { display: none; }
+
+/* ══════════════════ REVEALS ══════════════════ */
+[data-reveal] {
+  opacity: 0;
+  transition: opacity 1s var(--ease-out-expo), transform 1.15s var(--ease-out-expo), clip-path 1.15s var(--ease-out-expo), filter 1s var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: transform, opacity;
+}
+[data-reveal='up']    { transform: translate3d(0, 46px, 0); }
+[data-reveal='left']  { transform: translate3d(-56px, 0, 0); }
+[data-reveal='right'] { transform: translate3d(56px, 0, 0); }
+[data-reveal='scale'] { transform: scale(0.9); filter: blur(6px); }
+[data-reveal='mask']  { clip-path: inset(0 0 105% 0); transform: translate3d(0, 24px, 0); }
+[data-reveal='wipe']  { clip-path: inset(0 100% 0 0); }
+[data-reveal].is-in   { opacity: 1; transform: none; filter: none; clip-path: inset(0 0 0 0); }
+
+/* ══════════════════ MICRO-INTERACCIONES ══════════════════ */
+@utility link-underline { position: relative; }
+.link-underline::after {
+  content: '';
+  position: absolute; left: 0; bottom: -4px;
+  height: 1px; width: 100%;
+  border-radius: 999px;
+  background: var(--color-gold);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.55s var(--ease-out-expo);
+}
+.link-underline:hover::after { transform: scaleX(1); transform-origin: left; }
+
+.btn-gold {
+  position: relative; overflow: hidden; isolation: isolate;
+  border-radius: var(--radius-btn);
+  transition: transform 0.5s var(--ease-out-expo), box-shadow 0.5s var(--ease-out-expo);
+}
+.btn-gold::before {
+  content: '';
+  position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(115deg, var(--color-gold-deep), var(--color-gold) 45%, var(--color-gold-soft) 55%, var(--color-gold-deep));
+  background-size: 200% 100%;
+  transition: background-position 0.7s var(--ease-out-expo);
+}
+.btn-gold::after {
+  content: '';
+  position: absolute; top: 0; left: 0; width: 45%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.5), transparent);
+  animation: sheen 5.5s ease-in-out infinite;
+}
+.btn-gold:hover { transform: translateY(-3px); box-shadow: 0 14px 44px -12px color-mix(in oklab, var(--color-gold) 60%, transparent); }
+.btn-gold:hover::before { background-position: 100% 0; }
+.btn-gold:active { transform: translateY(-1px); }
+
+.btn-ghost {
+  position: relative; overflow: hidden; isolation: isolate;
+  border-radius: var(--radius-btn);
+  transition: color 0.45s var(--ease-out-expo);
+}
+.btn-ghost::before {
+  content: '';
+  position: absolute; inset: 0; z-index: -1;
+  background: var(--color-gold);
+  transform: translateY(101%);
+  transition: transform 0.6s var(--ease-out-expo);
+}
+.btn-ghost:hover { color: var(--color-navy); }
+.btn-ghost:hover::before { transform: translateY(0); }
+
+.tilt {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0);
+  transition: transform 0.4s var(--ease-out-expo), border-color 0.4s ease, background-color 0.4s ease;
+  transform-style: preserve-3d;
+}
+.spotlight::before {
+  content: '';
+  position: absolute; inset: 0;
+  opacity: 0;
+  border-radius: inherit;
+  transition: opacity 0.45s ease;
+  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), color-mix(in oklab, var(--color-gold) 14%, transparent), transparent 62%);
+  pointer-events: none;
+}
+.spotlight:hover::before { opacity: 1; }
+
+.accordion-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.65s var(--ease-in-out-quint), opacity 0.5s ease;
+  opacity: 0;
+}
+.accordion-body > div { overflow: hidden; }
+[data-open='true'] .accordion-body { grid-template-rows: 1fr; opacity: 1; }
+[data-open='true'] .accordion-icon { transform: rotate(135deg); }
+.accordion-icon { transition: transform 0.6s var(--ease-in-out-quint); }
+
+#cursor {
+  position: fixed; top: 0; left: 0;
+  width: 30px; height: 30px; margin: -15px 0 0 -15px;
+  border: 1px solid var(--color-gold);
+  border-radius: 50%;
+  pointer-events: none; z-index: 9999; opacity: 0;
+  transition: transform 0.18s var(--ease-out-expo), opacity 0.3s ease, width 0.35s var(--ease-out-expo), height 0.35s var(--ease-out-expo), margin 0.35s var(--ease-out-expo), background-color 0.35s ease;
+  mix-blend-mode: difference;
+}
+#cursor.is-hovering { width: 62px; height: 62px; margin: -31px 0 0 -31px; background: color-mix(in oklab, var(--color-gold) 20%, transparent); }
+@media (hover: hover) and (pointer: fine) {
+  body.has-cursor, body.has-cursor a, body.has-cursor button { cursor: none; }
+}
+
+/* Línea guía que se dibuja con el scroll */
+.draw-line { transform: scaleY(1); opacity: 0.35; }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .draw-line { opacity: 1; animation: drawLine linear both; animation-timeline: view(); animation-range: entry 30% cover 70%; }
+    @keyframes drawLine { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  }
+}
+
+/* ══════════════════ VIEW TRANSITIONS ══════════════════ */
+@keyframes vtIn {
+  from { opacity: 0; transform: translateY(26px); clip-path: inset(0 0 12% 0); }
+  to   { opacity: 1; transform: none; clip-path: inset(0 0 0 0); }
+}
+@keyframes vtOut {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(-14px); }
+}
+::view-transition-old(root) { animation: vtOut 0.32s var(--ease-in-out-quint) both; }
+::view-transition-new(root) { animation: vtIn 0.62s var(--ease-out-expo) both; }
+
+/* ══════════════════ ACCESIBILIDAD ══════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  [data-reveal] { opacity: 1 !important; transform: none !important; clip-path: none !important; filter: none !important; }
+  #cursor { display: none; }
+}

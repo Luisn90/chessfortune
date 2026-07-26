@@ -1,0 +1,130 @@
+---
+import { nav, site } from '../data/site';
+const path = Astro.url.pathname;
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+
+<header id="site-nav" transition:persist class="fixed inset-x-0 top-0 z-70 py-4">
+  <div class="mx-auto max-w-[1400px] px-4 lg:px-8">
+    <div
+      id="nav-shell"
+      class="flex items-center justify-between rounded-panel border border-transparent px-4 py-2.5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] data-[stuck=true]:border-line/70 data-[stuck=true]:bg-navy/80 data-[stuck=true]:backdrop-blur-xl lg:px-6"
+    >
+      <a href="/" class="flex items-center transition-opacity duration-400 hover:opacity-80" aria-label="Chess Fortune, inicio">
+        <img src="/brand/logo.svg" alt="Chess Fortune" class="h-7 w-auto sm:h-8" width="887" height="265" />
+      </a>
+
+      <nav class="hidden items-center gap-8 md:flex" aria-label="Principal">
+        {
+          nav.map((item) => (
+            <a
+              href={item.href}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              class:list={[
+                'link-underline group relative font-sans text-[0.82rem] uppercase tracking-[0.18em] transition-colors duration-400',
+                isActive(item.href) ? 'text-gold' : 'text-mist hover:text-white',
+              ]}
+            >
+              <span class="absolute -top-3 left-0 font-sans text-[0.55rem] tracking-[0.2em] text-gold/45 opacity-0 transition-all duration-500 group-hover:-top-4 group-hover:opacity-100">
+                {item.code}
+              </span>
+              {item.label}
+            </a>
+          ))
+        }
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <a href={site.discord} rel="noopener" class="btn-gold hidden px-6 py-3 font-sans text-[0.7rem] font-medium uppercase tracking-[0.2em] text-navy sm:block">
+          Únete al Discord
+        </a>
+        <button
+          id="menu-btn"
+          type="button"
+          aria-label="Abrir menú"
+          aria-expanded="false"
+          aria-controls="menu-panel"
+          class="group grid size-10 place-items-center rounded-btn border border-line bg-surface/60 md:hidden"
+        >
+          <span class="flex w-5 flex-col gap-[5px]">
+            <span class="h-px w-full rounded-full bg-ivory transition-transform duration-400 group-aria-expanded:translate-y-[3px] group-aria-expanded:rotate-45"></span>
+            <span class="h-px w-full rounded-full bg-ivory transition-transform duration-400 group-aria-expanded:-translate-y-[3px] group-aria-expanded:-rotate-45"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Panel móvil: casillas que barren dentro de un marco redondeado -->
+<div id="menu-panel" inert class="pointer-events-none fixed inset-0 z-60 p-4 opacity-0 transition-opacity duration-100 md:hidden">
+  <div class="relative h-full overflow-hidden rounded-panel">
+    <div class="absolute inset-0 grid grid-cols-4 grid-rows-4">
+      {
+        Array.from({ length: 16 }).map((_, i) => (
+          <span
+            class="menu-tile origin-top scale-y-0 bg-surface transition-transform duration-500 ease-[cubic-bezier(0.83,0,0.17,1)]"
+            style={`transition-delay:${(i % 4) * 45 + Math.floor(i / 4) * 30}ms`}
+          />
+        ))
+      }
+    </div>
+
+    <nav class="relative flex h-full flex-col justify-center gap-2 px-8" aria-label="Menú móvil">
+      {
+        nav.map((item, i) => (
+          <a
+            href={item.href}
+            class="menu-link flex translate-y-6 items-baseline gap-4 rounded-card px-4 py-4 font-display text-4xl text-white opacity-0 transition-all duration-600 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={`transition-delay:${320 + i * 70}ms`}
+          >
+            <span class="eyebrow text-[0.6rem]">{item.code}</span>
+            {item.label}
+          </a>
+        ))
+      }
+      <a
+        href={site.discord}
+        rel="noopener"
+        class="menu-link btn-gold mt-8 translate-y-6 self-start px-7 py-3.5 text-[0.72rem] uppercase tracking-[0.2em] text-navy opacity-0 transition-all duration-600"
+        style="transition-delay:640ms"
+      >
+        Únete al Discord
+      </a>
+    </nav>
+  </div>
+</div>
+
+<script>
+  function initNav() {
+    const shell = document.getElementById('nav-shell');
+    const btn = document.getElementById('menu-btn');
+    const panel = document.getElementById('menu-panel');
+    if (!shell || !btn || !panel) return;
+
+    const onScroll = () => shell.setAttribute('data-stuck', String(window.scrollY > 40));
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    const tiles = panel.querySelectorAll<HTMLElement>('.menu-tile');
+    const links = panel.querySelectorAll<HTMLElement>('.menu-link');
+
+    const setOpen = (open: boolean) => {
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+      panel.classList.toggle('pointer-events-none', !open);
+      panel.classList.toggle('opacity-0', !open);
+      if (open) panel.removeAttribute('inert');
+      else panel.setAttribute('inert', '');
+      tiles.forEach((t) => t.classList.toggle('scale-y-0', !open));
+      links.forEach((l) => { l.classList.toggle('opacity-0', !open); l.classList.toggle('translate-y-6', !open); });
+      document.documentElement.style.overflow = open ? 'hidden' : '';
+    };
+
+    btn.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
+    panel.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+  }
+
+  document.addEventListener('astro:page-load', initNav);
+</script>

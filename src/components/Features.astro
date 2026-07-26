@@ -1,0 +1,91 @@
+---
+import Piece from './Piece.astro';
+import { features } from '../data/site';
+---
+
+<section id="el-juego" class="relative">
+  <div class="mx-auto max-w-[1400px] px-6 lg:px-10">
+    <hr class="rule rule-fade" />
+    <header class="py-24 lg:py-32">
+      <p data-reveal="wipe" class="eyebrow mb-5">El medio juego · La plataforma</p>
+      <h2 data-reveal="mask" style="--reveal-delay:100ms" class="max-w-4xl text-[length:var(--text-display)]">
+        Todo lo que un tablero<br /> debería haber sido <span class="text-gilded">siempre</span>.
+      </h2>
+    </header>
+
+    <div id="features" class="grid gap-16 lg:grid-cols-12 lg:gap-16">
+      <div class="hidden lg:col-span-5 lg:block">
+        <div class="sticky top-28">
+          <div class="relative aspect-4/5 overflow-hidden rounded-panel border border-line bg-surface">
+            <div class="absolute -right-1/4 top-1/4 size-96 rounded-full opacity-35 blur-[90px]" style="background: radial-gradient(circle, rgba(224,169,87,0.5), transparent 65%)"></div>
+
+            {features.map((f, i) => (
+              <div class="feat-visual absolute inset-0 grid place-items-center opacity-0 transition-all duration-800 ease-[cubic-bezier(0.16,1,0.3,1)]" data-visual={i}>
+                <Piece type={f.piece} class="w-44 text-gold/85 drop-shadow-[0_24px_60px_rgba(224,169,87,0.28)]" />
+              </div>
+            ))}
+
+            <div class="absolute inset-x-0 bottom-0 flex items-end justify-between p-8">
+              <span id="feat-code" class="font-display text-6xl text-white/12 transition-all duration-600">b2</span>
+              <div class="flex gap-2">
+                {features.map((_, i) => <span class="feat-dot h-px w-10 rounded-full bg-line transition-all duration-500" data-dot={i} />)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-7">
+        {features.map((f, i) => (
+          <article class="feat-item transition-opacity duration-700 lg:min-h-[75vh]" data-item={i} data-code={f.code}>
+            <div class="rounded-card border border-line/50 bg-surface/25 p-8 lg:p-10">
+              <p data-reveal="up" class="eyebrow mb-6 text-[0.6rem]">{f.code} · Característica 0{i + 1}</p>
+              <h3 data-reveal="mask" style="--reveal-delay:80ms" class="max-w-lg text-[length:var(--text-title)]">{f.title}</h3>
+              <p data-reveal="up" style="--reveal-delay:180ms" class="mt-7 max-w-xl text-lg leading-relaxed text-mist">{f.body}</p>
+              <ul data-reveal="up" style="--reveal-delay:260ms" class="mt-9 flex flex-wrap gap-3">
+                {f.bullets.map((b) => (
+                  <li class="rounded-chip border border-line px-4 py-2 font-sans text-[0.7rem] uppercase tracking-[0.16em] text-mist transition-colors duration-400 hover:border-gold/50 hover:text-gold">{b}</li>
+                ))}
+              </ul>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  function initFeatures() {
+    const root = document.getElementById('features');
+    if (!root) return;
+    const items = Array.from(root.querySelectorAll<HTMLElement>('.feat-item'));
+    const visuals = Array.from(root.querySelectorAll<HTMLElement>('.feat-visual'));
+    const dots = Array.from(root.querySelectorAll<HTMLElement>('.feat-dot'));
+    const codeEl = document.getElementById('feat-code');
+    if (!items.length || !visuals.length) return;
+
+    const setActive = (index: number) => {
+      visuals.forEach((v, i) => {
+        v.style.opacity = i === index ? '1' : '0';
+        v.style.transform = i === index ? 'none' : 'translateY(28px) scale(0.94)';
+      });
+      dots.forEach((d, i) => {
+        d.style.backgroundColor = i === index ? 'var(--color-gold)' : '';
+        d.style.width = i === index ? '2.5rem' : '1rem';
+      });
+      items.forEach((it, i) => {
+        it.style.opacity = window.innerWidth >= 1024 && i !== index ? '0.4' : '1';
+      });
+      if (codeEl) codeEl.textContent = items[index].dataset.code ?? '';
+    };
+
+    setActive(0);
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.item)); }),
+      { rootMargin: '-45% 0px -45% 0px' }
+    );
+    items.forEach((it) => io.observe(it));
+  }
+  document.addEventListener('astro:page-load', initFeatures);
+</script>

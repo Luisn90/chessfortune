@@ -1,0 +1,153 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+import { site } from '../data/site';
+
+interface Props { title?: string; description?: string }
+const { title, description = site.description } = Astro.props;
+const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.tagline}`;
+---
+
+<!doctype html>
+<html lang="es" class="scroll-pt-24">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#090c16" />
+    <link rel="icon" type="image/svg+xml" href="/brand/seed.svg" />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site ?? 'https://chessfortune.com')} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/og.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <ClientRouter />
+  </head>
+
+  <body class="antialiased">
+    <div id="cursor" aria-hidden="true"></div>
+
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-btn focus:bg-gold focus:px-4 focus:py-2 focus:text-navy">
+      Saltar al contenido
+    </a>
+
+    <Nav />
+    <main id="main"><slot /></main>
+    <Footer />
+
+    <script>
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function initReveals() {
+        const items = document.querySelectorAll<HTMLElement>('[data-reveal]:not(.is-in)');
+        if (reduced) { items.forEach((el) => el.classList.add('is-in')); return; }
+        const io = new IntersectionObserver(
+          (entries) => entries.forEach((e) => {
+            if (!e.isIntersecting) return;
+            e.target.classList.add('is-in');
+            io.unobserve(e.target);
+          }),
+          { rootMargin: '0px 0px -12% 0px', threshold: 0.15 }
+        );
+        items.forEach((el) => io.observe(el));
+      }
+
+      function initCounters() {
+        const io = new IntersectionObserver(
+          (entries) => entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const el = entry.target as HTMLElement;
+            io.unobserve(el);
+            const target = parseFloat(el.dataset.count || '0');
+            const decimals = parseInt(el.dataset.decimals || '0', 10);
+            if (reduced) { el.textContent = target.toFixed(decimals); return; }
+            const start = performance.now();
+            const tick = (now: number) => {
+              const p = Math.min((now - start) / 1600, 1);
+              el.textContent = (target * (1 - Math.pow(1 - p, 4))).toFixed(decimals);
+              if (p < 1) requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+          }),
+          { threshold: 0.5 }
+        );
+        document.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => io.observe(el));
+      }
+
+      function initPointer() {
+        if (reduced) return;
+        const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        const cursor = document.getElementById('cursor');
+
+        if (fine && cursor) {
+          document.body.classList.add('has-cursor');
+          let x = 0, y = 0, cx = 0, cy = 0;
+          window.addEventListener('pointermove', (e) => { x = e.clientX; y = e.clientY; cursor.style.opacity = '1'; });
+          (function loop() {
+            cx += (x - cx) * 0.18; cy += (y - cy) * 0.18;
+            cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
+            requestAnimationFrame(loop);
+          })();
+          document.querySelectorAll('a, button, [data-cursor]').forEach((el) => {
+            el.addEventListener('pointerenter', () => cursor.classList.add('is-hovering'));
+            el.addEventListener('pointerleave', () => cursor.classList.remove('is-hovering'));
+          });
+        }
+
+        document.querySelectorAll<HTMLElement>('.tilt, .spotlight').forEach((card) => {
+          card.addEventListener('pointermove', (e) => {
+            const r = card.getBoundingClientRect();
+            const px = (e.clientX - r.left) / r.width;
+            const py = (e.clientY - r.top) / r.height;
+            card.style.setProperty('--mx', `${px * 100}%`);
+            card.style.setProperty('--my', `${py * 100}%`);
+            if (card.classList.contains('tilt')) {
+              card.style.setProperty('--ry', `${(px - 0.5) * 11}deg`);
+              card.style.setProperty('--rx', `${(0.5 - py) * 11}deg`);
+            }
+          });
+          card.addEventListener('pointerleave', () => {
+            card.style.setProperty('--ry', '0deg');
+            card.style.setProperty('--rx', '0deg');
+          });
+        });
+      }
+
+      function initParallax() {
+        if (reduced) return;
+        const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-parallax]'));
+        if (!layers.length) return;
+        let ticking = false;
+        const update = () => {
+          const vh = window.innerHeight;
+          layers.forEach((el) => {
+            const r = el.getBoundingClientRect();
+            if (r.bottom < -200 || r.top > vh + 200) return;
+            const speed = parseFloat(el.dataset.parallax || '0.1');
+            el.style.transform = `translate3d(0, ${-((r.top + r.height / 2 - vh / 2) * speed)}px, 0)`;
+          });
+          ticking = false;
+        };
+        window.addEventListener('scroll', () => {
+          if (!ticking) { ticking = true; requestAnimationFrame(update); }
+        }, { passive: true });
+        update();
+      }
+
+      document.addEventListener('astro:page-load', () => {
+        initReveals();
+        initCounters();
+        initPointer();
+        initParallax();
+      });
+    </script>
+  </body>
+</html>

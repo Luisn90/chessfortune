@@ -1,0 +1,45 @@
+---
+import { steps } from '../data/site';
+---
+
+<section id="como-funciona" class="relative mx-auto max-w-[1400px] px-6 py-24 lg:px-10 lg:py-40">
+  <hr class="rule rule-fade mb-24 lg:mb-32" />
+  <header class="mb-20 max-w-2xl lg:mb-28">
+    <p data-reveal="wipe" class="eyebrow mb-5">La apertura · Cómo funciona</p>
+    <h2 data-reveal="mask" style="--reveal-delay:100ms" class="text-[length:var(--text-display)]">
+      Cuatro jugadas entre<br /> tú y el <span class="text-gilded">primer bote</span>.
+    </h2>
+  </header>
+
+  <div class="relative">
+    <span class="draw-line pointer-events-none absolute left-[7px] top-2 hidden h-full w-px origin-top rounded-full bg-gradient-to-b from-gold via-gold/50 to-transparent lg:block" aria-hidden="true"></span>
+
+    <ol class="space-y-16 lg:space-y-0">
+      {steps.map((step, i) => (
+        <li data-reveal="left" style={`--reveal-delay:${i * 90}ms`} class="group relative lg:pb-24">
+          <div class="flex gap-6 lg:gap-10">
+            <div class="relative hidden shrink-0 lg:block">
+              <span class="relative z-10 grid size-4 place-items-center">
+                <span class="size-2 rounded-full bg-gold transition-transform duration-500 group-hover:scale-[2.4]" />
+              </span>
+            </div>
+
+            <div class="max-w-xl lg:pl-4" style={`margin-left:${i * 5}rem`}>
+              <p class="eyebrow mb-4 text-[0.6rem]">{step.move}</p>
+              <h3 class="text-[length:var(--text-title)] transition-colors duration-500 group-hover:text-gold-soft">{step.title}</h3>
+              <p class="mt-5 leading-relaxed text-mist">{step.body}</p>
+            </div>
+
+            <span class="ml-auto hidden select-none self-start font-display text-[7rem] leading-none text-white/[0.045] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:text-gold/10 xl:block" aria-hidden="true">0{i + 1}</span>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  @media (max-width: 1023px) {
+    li > div > div[style] { margin-left: 0 !important; }
+  }
+</style>

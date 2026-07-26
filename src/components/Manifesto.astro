@@ -1,0 +1,15 @@
+---
+const text = 'El ajedrez lleva mil quinientos años esperando algo en juego. Aquí cada movimiento pesa, cada error cuesta y cada victoria se cobra.';
+const words = text.split(' ');
+---
+
+<section class="mx-auto max-w-5xl px-6 py-28 lg:py-44">
+  <p class="eyebrow mb-10 text-center" data-reveal="wipe">Manifiesto</p>
+  <p class="text-center font-display text-[clamp(1.6rem,3.6vw,3.2rem)] leading-[1.22] text-white">
+    {words.map((w, i) => (
+      <span data-reveal="up" style={`--reveal-delay:${i * 34}ms`} class:list={['inline-block', /victoria|juego|cobra/.test(w) ? 'text-gilded' : '']}>
+        {w}&nbsp;
+      </span>
+    ))}
+  </p>
+</section>

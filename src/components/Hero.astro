@@ -1,0 +1,122 @@
+---
+import Piece from './Piece.astro';
+import SeedMark from './SeedMark.astro';
+
+const lines = [
+  { text: 'Juega', accent: false },
+  { text: 'al ajedrez', accent: false },
+  { text: 'y conquista', accent: false },
+  { text: 'el mundo', accent: true },
+];
+const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+---
+
+<section class="relative flex min-h-[100svh] items-end overflow-hidden pb-16 pt-32 lg:pb-24" aria-labelledby="hero-title">
+  <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+    <div class="absolute -right-[15%] top-[8%] size-[70vw] max-w-[900px] rounded-full opacity-45 blur-[140px]" style="background: radial-gradient(circle, rgba(224,169,87,0.22), transparent 62%)"></div>
+  </div>
+
+  <div class="pointer-events-none absolute inset-0 hidden lg:block" aria-hidden="true">
+    <div data-parallax="0.22" class="absolute left-[6%] top-[24%]">
+      <Piece type="pawn" class="w-16 animate-[float_11s_ease-in-out_infinite] text-gold/25" />
+    </div>
+    <div data-parallax="-0.16" class="absolute right-[30%] top-[16%]">
+      <Piece type="bishop" class="w-20 animate-[float_9s_ease-in-out_infinite_-2s] text-white/10" />
+    </div>
+    <div data-parallax="0.3" class="absolute bottom-[14%] left-[26%]">
+      <Piece type="rook" class="w-14 animate-[float_13s_ease-in-out_infinite_-5s] text-gold/20" />
+    </div>
+  </div>
+
+  <div class="relative mx-auto grid w-full max-w-[1400px] gap-16 px-6 lg:grid-cols-12 lg:gap-8 lg:px-10">
+    <div class="lg:col-span-7">
+      <div data-reveal="up" class="mb-9 inline-flex items-center gap-3 rounded-chip border border-gold/25 bg-surface/60 px-5 py-2 backdrop-blur-sm">
+        <span class="relative flex size-1.5">
+          <span class="absolute inline-flex size-full animate-ping rounded-full bg-gold opacity-75"></span>
+          <span class="relative inline-flex size-1.5 rounded-full bg-gold"></span>
+        </span>
+        <span class="eyebrow text-[0.62rem]">Lanzamiento 2026 · Beta cerrada activa</span>
+      </div>
+
+      <h1 id="hero-title" class="text-[length:var(--text-hero)]">
+        {lines.map((line, i) => (
+          <span class="block overflow-hidden">
+            <span data-reveal="mask" style={`--reveal-delay:${120 + i * 110}ms`} class:list={['block', line.accent && 'text-gilded']}>
+              {line.text}
+            </span>
+          </span>
+        ))}
+      </h1>
+
+      <p data-reveal="up" style="--reveal-delay:640ms" class="mt-9 max-w-lg text-lg leading-relaxed text-mist">
+        Una sala global abierta las 24 horas donde cada partida se juega por
+        <strong class="font-normal text-white">Seeds</strong>. Tú eliges el tablero, el reloj y cuánto hay en juego. El ganador se lo lleva todo.
+      </p>
+
+      <div data-reveal="up" style="--reveal-delay:760ms" class="mt-11 flex flex-wrap items-center gap-4">
+        <a href="/juego" class="btn-gold px-9 py-4 font-sans text-[0.76rem] font-medium uppercase tracking-[0.22em] text-navy">Descubre el juego</a>
+        <a href="https://discord.com/invite/fJd4RSMnTy" rel="noopener" class="btn-ghost border border-line px-8 py-4 font-sans text-[0.76rem] uppercase tracking-[0.22em] text-ivory">Únete al Discord</a>
+      </div>
+    </div>
+
+    <div class="relative lg:col-span-5 lg:pl-6">
+      <div data-reveal="scale" style="--reveal-delay:420ms" class="relative mx-auto max-w-[420px]">
+        <div class="absolute -left-7 top-0 hidden h-full flex-col justify-around font-sans text-[0.6rem] tracking-widest text-mist/40 sm:flex" aria-hidden="true">
+          {[8, 7, 6, 5, 4, 3, 2, 1].map((n) => <span>{n}</span>)}
+        </div>
+
+        <div class="relative overflow-hidden rounded-panel border border-gold/25 p-2 shadow-[0_50px_120px_-40px_rgba(0,0,0,0.9)]">
+          <div id="live-board" class="relative grid aspect-square grid-cols-8 overflow-hidden rounded-card">
+            {Array.from({ length: 64 }).map((_, i) => {
+              const dark = (Math.floor(i / 8) + i) % 2 === 1;
+              return <span class:list={['square relative transition-[background-color,box-shadow] duration-700', dark ? 'bg-surface-2' : 'bg-surface']} />;
+            })}
+            <div class="pointer-events-none absolute inset-0 grid place-items-center">
+              <Piece type="knight" variant="solid" class="w-24 animate-[float_10s_ease-in-out_infinite] text-gold drop-shadow-[0_18px_40px_rgba(224,169,87,0.35)]" />
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3 flex justify-around font-sans text-[0.6rem] tracking-widest text-mist/40" aria-hidden="true">
+          {files.map((f) => <span>{f}</span>)}
+        </div>
+
+        <div data-reveal="right" style="--reveal-delay:900ms" class="absolute -bottom-6 -left-6 hidden items-center gap-4 rounded-card border border-gold/25 bg-navy/85 px-5 py-4 backdrop-blur-md sm:flex">
+          <SeedMark class="size-10 shrink-0" />
+          <div>
+            <p class="eyebrow text-[0.55rem]">Bote en juego</p>
+            <p class="mt-1 font-display text-2xl text-white">
+              <span data-count="1250" data-decimals="0">0</span><span class="text-gold"> Seeds</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 lg:flex" aria-hidden="true">
+    <span class="font-sans text-[0.55rem] uppercase tracking-[0.35em] text-mist/50">Scroll</span>
+    <span class="relative h-12 w-px overflow-hidden rounded-full bg-line">
+      <span class="absolute inset-x-0 top-0 h-1/3 animate-[scrollCue_2.4s_ease-in-out_infinite] rounded-full bg-gold"></span>
+    </span>
+  </div>
+</section>
+
+<script>
+  function initLiveBoard() {
+    const board = document.getElementById('live-board');
+    if (!board || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const squares = Array.from(board.querySelectorAll<HTMLElement>('.square'));
+    let timer: number;
+    const flash = () => {
+      const el = squares[Math.floor(Math.random() * squares.length)];
+      el.style.backgroundColor = 'rgba(224,169,87,0.24)';
+      el.style.boxShadow = 'inset 0 0 24px rgba(224,169,87,0.35)';
+      window.setTimeout(() => { el.style.backgroundColor = ''; el.style.boxShadow = ''; }, 900);
+      timer = window.setTimeout(flash, 420 + Math.random() * 700);
+    };
+    flash();
+    document.addEventListener('astro:before-swap', () => clearTimeout(timer), { once: true });
+  }
+  document.addEventListener('astro:page-load', initLiveBoard);
+</script>

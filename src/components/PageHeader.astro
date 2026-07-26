@@ -1,0 +1,23 @@
+---
+interface Props { eyebrow: string; title: string; accent?: string; lead?: string }
+const { eyebrow, title, accent, lead } = Astro.props;
+---
+
+<header class="relative overflow-hidden pb-20 pt-40 lg:pb-28 lg:pt-52">
+  <div
+    class="pointer-events-none absolute -right-[10%] -top-[30%] size-[60vw] max-w-[750px] rounded-full opacity-45 blur-[130px]"
+    style="background: radial-gradient(circle, rgba(224,169,87,0.2), transparent 62%)"
+    aria-hidden="true"
+  ></div>
+
+  <div class="relative mx-auto max-w-[1400px] px-6 lg:px-10">
+    <p data-reveal="wipe" class="eyebrow mb-6">{eyebrow}</p>
+    <h1 data-reveal="mask" style="--reveal-delay:90ms" class="max-w-4xl text-[length:var(--text-display)]">
+      {title}{accent && <span class="text-gilded"> {accent}</span>}
+    </h1>
+    {lead && (
+      <p data-reveal="up" style="--reveal-delay:220ms" class="mt-8 max-w-2xl text-lg leading-relaxed text-mist">{lead}</p>
+    )}
+    <hr class="rule rule-fade mt-20" />
+  </div>
+</header>
