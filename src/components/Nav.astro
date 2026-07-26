@@ -96,34 +96,61 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
 </div>
 
 <script>
-  function initNav() {
-    const shell = document.getElementById('nav-shell');
+  /**
+   * El header lleva transition:persist, así que sus nodos sobreviven a las
+   * navegaciones. Si en cada astro:page-load añadiésemos listeners al botón,
+   * se acumularían y cada tap alternaría N veces (la hamburguesa "muere").
+   * Solución: delegación de eventos registrada UNA sola vez, con búsqueda
+   * dinámica del panel (que sí se recrea en cada página).
+   */
+  const w = window as any;
+
+  function setMenu(open: boolean) {
     const btn = document.getElementById('menu-btn');
     const panel = document.getElementById('menu-panel');
-    if (!shell || !btn || !panel) return;
+    if (!btn || !panel) return;
+    btn.setAttribute('aria-expanded', String(open));
+    btn.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+    panel.classList.toggle('pointer-events-none', !open);
+    panel.classList.toggle('opacity-0', !open);
+    if (open) panel.removeAttribute('inert');
+    else panel.setAttribute('inert', '');
+    panel.querySelectorAll('.menu-tile').forEach((t) => t.classList.toggle('scale-y-0', !open));
+    panel.querySelectorAll('.menu-link').forEach((l) => {
+      l.classList.toggle('opacity-0', !open);
+      l.classList.toggle('translate-y-6', !open);
+    });
+    document.documentElement.style.overflow = open ? 'hidden' : '';
+  }
 
-    const onScroll = () => shell.setAttribute('data-stuck', String(window.scrollY > 40));
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
+  function initNav() {
+    // Estado "pegado" de la píldora: un único listener global
+    if (!w.__cfNavScroll) {
+      w.__cfNavScroll = () =>
+        document.getElementById('nav-shell')?.setAttribute('data-stuck', String(window.scrollY > 40));
+      window.addEventListener('scroll', w.__cfNavScroll, { passive: true });
+    }
+    w.__cfNavScroll();
 
-    const tiles = panel.querySelectorAll<HTMLElement>('.menu-tile');
-    const links = panel.querySelectorAll<HTMLElement>('.menu-link');
+    if (w.__cfMenuBound) return;
+    w.__cfMenuBound = true;
 
-    const setOpen = (open: boolean) => {
-      btn.setAttribute('aria-expanded', String(open));
-      btn.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
-      panel.classList.toggle('pointer-events-none', !open);
-      panel.classList.toggle('opacity-0', !open);
-      if (open) panel.removeAttribute('inert');
-      else panel.setAttribute('inert', '');
-      tiles.forEach((t) => t.classList.toggle('scale-y-0', !open));
-      links.forEach((l) => { l.classList.toggle('opacity-0', !open); l.classList.toggle('translate-y-6', !open); });
-      document.documentElement.style.overflow = open ? 'hidden' : '';
-    };
+    document.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t.closest('#menu-btn')) {
+        const btn = document.getElementById('menu-btn')!;
+        setMenu(btn.getAttribute('aria-expanded') !== 'true');
+      } else if (t.closest('#menu-panel a')) {
+        setMenu(false);
+      }
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
 
-    btn.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
-    panel.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+    // Red de seguridad: al navegar, nunca dejar el scroll bloqueado
+    document.addEventListener('astro:after-swap', () => {
+      document.documentElement.style.overflow = '';
+      document.getElementById('menu-btn')?.setAttribute('aria-expanded', 'false');
+    });
   }
 
   document.addEventListener('astro:page-load', initNav);

@@ -85,28 +85,54 @@ const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site
         document.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => io.observe(el));
       }
 
+      /**
+       * Con View Transitions, astro:page-load se dispara en CADA navegación.
+       * El #cursor y las tarjetas se recrean con cada página, así que:
+       * - el bucle rAF del cursor debe cancelarse y relanzarse (o quedaría
+       *   apuntando a un nodo muerto y el cursor "moriría" tras navegar), y
+       * - los listeners de window/document deben registrarse UNA vez
+       *   (delegación) o retirarse antes de re-añadirse, para no acumularse
+       *   y degradar el rendimiento navegación tras navegación.
+       */
+      const w = window as any;
+
       function initPointer() {
         if (reduced) return;
         const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-        const cursor = document.getElementById('cursor');
 
+        // ── Cursor dorado: relanzar por página ──
+        const cursor = document.getElementById('cursor');
         if (fine && cursor) {
           document.body.classList.add('has-cursor');
-          let x = 0, y = 0, cx = 0, cy = 0;
-          window.addEventListener('pointermove', (e) => { x = e.clientX; y = e.clientY; cursor.style.opacity = '1'; });
-          (function loop() {
+          if (w.__cfCursorRaf) cancelAnimationFrame(w.__cfCursorRaf);
+          if (w.__cfCursorMove) window.removeEventListener('pointermove', w.__cfCursorMove);
+          let x = 0, y = 0, cx = innerWidth / 2, cy = innerHeight / 2;
+          w.__cfCursorMove = (e: PointerEvent) => { x = e.clientX; y = e.clientY; cursor.style.opacity = '1'; };
+          window.addEventListener('pointermove', w.__cfCursorMove);
+          const loop = () => {
             cx += (x - cx) * 0.18; cy += (y - cy) * 0.18;
             cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
-            requestAnimationFrame(loop);
-          })();
-          document.querySelectorAll('a, button, [data-cursor]').forEach((el) => {
-            el.addEventListener('pointerenter', () => cursor.classList.add('is-hovering'));
-            el.addEventListener('pointerleave', () => cursor.classList.remove('is-hovering'));
+            w.__cfCursorRaf = requestAnimationFrame(loop);
+          };
+          loop();
+        }
+
+        // ── Crecimiento del cursor sobre enlaces: delegación única ──
+        if (fine && !w.__cfHoverBound) {
+          w.__cfHoverBound = true;
+          document.addEventListener('pointerover', (e) => {
+            const c = document.getElementById('cursor');
+            if (!c) return;
+            c.classList.toggle('is-hovering', !!(e.target as HTMLElement).closest?.('a, button, [data-cursor]'));
           });
         }
 
-        document.querySelectorAll<HTMLElement>('.tilt, .spotlight').forEach((card) => {
-          card.addEventListener('pointermove', (e) => {
+        // ── Tilt 3D + halo: delegación única (las tarjetas cambian por página) ──
+        if (!w.__cfTiltBound) {
+          w.__cfTiltBound = true;
+          document.addEventListener('pointermove', (e) => {
+            const card = (e.target as HTMLElement).closest?.('.tilt, .spotlight') as HTMLElement | null;
+            if (!card) return;
             const r = card.getBoundingClientRect();
             const px = (e.clientX - r.left) / r.width;
             const py = (e.clientY - r.top) / r.height;
@@ -117,17 +143,20 @@ const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site
               card.style.setProperty('--rx', `${(0.5 - py) * 11}deg`);
             }
           });
-          card.addEventListener('pointerleave', () => {
+          document.addEventListener('pointerout', (e) => {
+            const card = (e.target as HTMLElement).closest?.('.tilt') as HTMLElement | null;
+            if (!card || card.contains(e.relatedTarget as Node)) return;
             card.style.setProperty('--ry', '0deg');
             card.style.setProperty('--rx', '0deg');
           });
-        });
+        }
       }
 
       function initParallax() {
         if (reduced) return;
+        if (w.__cfParallaxFn) window.removeEventListener('scroll', w.__cfParallaxFn);
         const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-parallax]'));
-        if (!layers.length) return;
+        if (!layers.length) { w.__cfParallaxFn = null; return; }
         let ticking = false;
         const update = () => {
           const vh = window.innerHeight;
@@ -139,9 +168,8 @@ const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site
           });
           ticking = false;
         };
-        window.addEventListener('scroll', () => {
-          if (!ticking) { ticking = true; requestAnimationFrame(update); }
-        }, { passive: true });
+        w.__cfParallaxFn = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+        window.addEventListener('scroll', w.__cfParallaxFn, { passive: true });
         update();
       }
 
