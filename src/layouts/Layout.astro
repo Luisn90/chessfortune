@@ -55,7 +55,10 @@ const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site
             e.target.classList.add('is-in');
             io.unobserve(e.target);
           }),
-          { rootMargin: '0px 0px -12% 0px', threshold: 0.15 }
+          // threshold DEBE ser 0: los reveals 'mask' y 'wipe' arrancan con
+          // clip-path, que recorta el área de intersección a cero. Con un
+          // umbral mayor que 0 nunca dispararían y quedarían invisibles.
+          { rootMargin: '0px 0px -12% 0px', threshold: 0 }
         );
         items.forEach((el) => io.observe(el));
       }
